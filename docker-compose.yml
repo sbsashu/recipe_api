@@ -19,6 +19,8 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=ashu@123
+    depends_on:
+      - db
   db:
     image: postgres:13-alpine
     volumes:
