@@ -6,6 +6,10 @@ from core import models
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+def create_user(email="user@example.com", password="ashut123"):
+    """creating user for model test"""
+    return get_user_model().objects.create_user(email, password)
+
 class ModelTests(TestCase):
     """user creation test"""
 
@@ -64,3 +68,12 @@ class ModelTests(TestCase):
             time_minutes=5,
         )
         self.assertEqual(str(res), res.title)
+
+    def test_tag_model(self):
+        """tag test"""
+        res = create_user()
+        tag = models.Tag(
+            user=res,
+            name= "tag name",
+        )
+        self.assertEqual(str(tag), tag.name)

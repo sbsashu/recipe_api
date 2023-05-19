@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from core.models import Recipe
+from core.models import Recipe, Tag
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.urls import reverse
@@ -168,3 +168,49 @@ class PrivateRecipeTests(TestCase):
         res = self.client.delete(recipe_uri)
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Recipe.objects.filter(id=recipe.id).exists())
+
+    def test_recipe_with_tag(self):
+        """test recipe with tag"""
+        payload = {
+            'title': 'Recipe 1',
+            'time_minutes': 32,
+            'price': Decimal('12.3'),
+            'tags': [{'name': 'Thai'}, {'name': 'Dinner'}],
+        }
+        res = self.client.post(RECIPE_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.filter(user=self.user)
+        self.assertEqual(recipe.count(), 1)
+        recipe = recipe[0]
+        self.assertEqual(recipe.tags.count(), 2)
+        for elm in payload['tags']:
+            exist = recipe.tags.filter(
+                name=elm['name'],
+                user=self.user,
+            ).exists()
+            self.assertTrue(exist)
+
+    def test_create_recipe_with_tag(self):
+        """test create recipe tag"""
+        cr_tag = Tag.objects.create(user=self.user, name='Indian')
+        payload = {
+            'title': 'Recipe 2',
+            'time_minutes': 30,
+            'price': Decimal('12.32'),
+            'tags': [{'name': 'Indian'}, {'name': 'Soda Pani'}],
+        }
+        res = self.client.post(RECIPE_URL, payload, format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        recipe = Recipe.objects.create(user=self.user)
+        self.assertEqual(recipe.count(), 1)
+        recip = recipe[0]
+        self.assertIn(cr_tag, recip.tags.all())
+
+        self.assertEqual(recip.tags.count(), 2)
+
+        for ta in payload['tags']:
+            exist = recip.filter.filter(
+                 user=self.user,
+                 name=ta['name']
+            ).exists()
+            self.assertIn(exist)
