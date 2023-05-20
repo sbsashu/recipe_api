@@ -71,9 +71,18 @@ class ModelTests(TestCase):
 
     def test_tag_model(self):
         """tag test"""
-        res = create_user()
+        user = create_user()
         tag = models.Tag(
-            user=res,
+            user=user,
             name= "tag name",
         )
         self.assertEqual(str(tag), tag.name)
+
+    def test_ingredianent_model(self):
+        """tag test"""
+        user = create_user()
+        in_gre = models.Ingredient(
+            user=user,
+            name= "ingrediant name",
+        )
+        self.assertEqual(str(in_gre), in_gre.name)
