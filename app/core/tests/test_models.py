@@ -1,6 +1,7 @@
 """
 Tests for models
 """
+from unittest.mock import patch
 from decimal import Decimal
 from core import models
 from django.test import TestCase
@@ -86,3 +87,11 @@ class ModelTests(TestCase):
             name= "ingrediant name",
         )
         self.assertEqual(str(in_gre), in_gre.name)
+    @patch('core.models.uuid.uuid4')
+    def test_media_url_path(self, mock_uuid):
+        """test media file path"""
+        uuid_media = "user-uuid"
+        mock_uuid.return_value = uuid_media
+        file_path = models.get_media_url_path(None, 'example.jpg')
+
+        self.assertEqual(file_path, f'uploads/recipe/{uuid_media}.jpg')
