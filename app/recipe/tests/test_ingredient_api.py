@@ -4,11 +4,12 @@ test ingredient test api
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.test import TestCase
+from decimal import Decimal
 
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Ingredient
+from core.models import Ingredient, Recipe
 from recipe.serializers import IngredientSerializer
 
 INGRIDIENT_URL = reverse('recipe:ingredient-list')
@@ -82,3 +83,44 @@ class PrivateIngridientTest(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         ingre = Ingredient.objects.filter(user=self.user)
         self.assertFalse(ingre.exists())
+
+    def test_assinged_ingredient_to_recipe(self):
+        """Test assinged ingredient to recipe filter"""
+        ng1 = Ingredient.objects.create(user=self.user, name="Mirchi")
+        ng2 = Ingredient.objects.create(user=self.user, name="Mirchi1")
+        r1 = Recipe.objects.create(user=self.user, title='Burger', time_minutes=30, price=Decimal('12.12'))
+
+        r1.ingredients.add(ng1)
+        res = self.client.get(INGRIDIENT_URL, {'assigned_only': 1})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        s1 = IngredientSerializer(ng1)
+        s2 = IngredientSerializer(ng2)
+        self.assertIn(s1.data, res.data)
+        self.assertNotIn(s2.data, res.data)
+
+    def test_filter_unique(self):
+        """test filter unique ingredient"""
+        ng = Ingredient.objects.create(user=self.user, name="Eggs")
+        Ingredient.objects.create(user=self.user, name="Curry")
+
+        recipe1 = Recipe.objects.create(
+            user=self.user,
+            title='Mix',
+            price=Decimal('12.13'),
+            time_minutes=21
+        )
+
+        recipe2 = Recipe.objects.create(
+            user=self.user,
+            title='Mix1',
+            price=Decimal('12.13'),
+            time_minutes=21
+        )
+
+        recipe1.ingredients.add(ng)
+        recipe2.ingredients.add(ng)
+
+        res = self.client.get(INGRIDIENT_URL, {'assigned_only': 1})
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)

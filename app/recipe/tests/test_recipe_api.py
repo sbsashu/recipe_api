@@ -360,12 +360,12 @@ class PrivateRecipeTests(TestCase):
         params = {'tags': f'{tag1.id},{tag2.id}'}
         res = self.client.get(RECIPE_URL, params)
 
-        s1 = RecipeSerializer(r1.data)
-        s2 = RecipeSerializer(r2.data)
-        s3 = RecipeSerializer(r3.data)
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
         self.assertIn(s1.data, res.data)
         self.assertIn(s2.data, res.data)
-        self.assertNotIn(r3.data, res.data)
+        self.assertNotIn(s3.data, res.data)
 
     def test_filter_by_ingredients(self):
         """test filter by ingredients"""
@@ -376,13 +376,13 @@ class PrivateRecipeTests(TestCase):
         r1.ingredients.add(ing1)
         r2.ingredients.add(ing2)
 
-        r3 = Ingredient.objects.create(user=self.user, name='Momos')
+        r3 = create_recipe(user=self.user, title='Momos')
         params = {'ingredients': f'{ing1.id}, {ing2.id}'}
         res = self.client.get(RECIPE_URL, params)
 
-        s1 = RecipeSerializer(r1.data)
-        s2 = RecipeSerializer(r2.data)
-        s3 = RecipeSerializer(r3.data)
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
 
         self.assertIn(s1.data, res.data)
         self.assertIn(s2.data, res.data)
